@@ -2,6 +2,11 @@
 #include <stdlib.h>
 
 #define ERROR_INPUT 100
+#define MAX_SEQUENCE 100
+
+#define PRIORITY_ADD 1
+#define PRIORITY_SUB 1
+#define PRIORITY_MUL 2
 
 typedef struct matrix
 {
@@ -9,6 +14,12 @@ typedef struct matrix
   int cols;
   int *elems;
 } matrix_t;
+
+typedef struct operation
+{
+  char sign;
+  int priority;
+} operation_t;
 
 // Function prototypes
 int read_matrix(matrix_t *matrix);
@@ -19,35 +30,47 @@ int compute_matrix(matrix_t *matrix1, char sign, matrix_t *matrix2);
 void add_matrix(matrix_t *matrix1, matrix_t *matrix2);
 void sub_matrix(matrix_t *matrix1, matrix_t *matrix2);
 int mul_matrix(matrix_t *matrix1, matrix_t *matrix2);
-int allocate_matrix(matrix_t *matrix, int rows, int cols);
 void free_matrix(matrix_t *matrix);
+int read_sequence(matrix_t matrices[], operation_t operations[], int *matrix_count, int *operation_count);
+int compute_sequence(matrix_t matrices[], operation_t operations[], int *matrix_count, int *operation_count);
 
 int main(int argc, char *argv[])
 {
-  matrix_t matrix1;
-  matrix_t matrix2;
-  char sign;
+  matrix_t matrices[MAX_SEQUENCE];
+  operation_t operations[MAX_SEQUENCE - 1];
+  int matrix_count, operation_count;
 
-  if (read_matrix(&matrix1) == ERROR_INPUT ||
-      read_sign(&sign) == ERROR_INPUT ||
-      read_matrix(&matrix2) == ERROR_INPUT)
+  for (size_t i = 0; i < MAX_SEQUENCE; i++)
+  {
+    matrices[i].rows = 0;
+    matrices[i].cols = 0;
+    matrices[i].elems = NULL;
+  }
+
+  if (read_sequence(matrices, operations, &matrix_count, &operation_count) == ERROR_INPUT)
   {
     fprintf(stderr, "Error: Chybny vstup!\n");
+    for (size_t i = 0; i < matrix_count + 1; i++)
+    {
+      free_matrix(&matrices[i]);
+    }
     return ERROR_INPUT;
   }
 
-  if (compute_matrix(&matrix1, sign, &matrix2) == ERROR_INPUT)
+  if (compute_sequence(matrices, operations, &matrix_count, &operation_count) == ERROR_INPUT)
   {
     fprintf(stderr, "Error: Chybny vstup!\n");
-    free_matrix(&matrix1);
-    free_matrix(&matrix2);
+    for (size_t i = 0; i < matrix_count; i++)
+    {
+      free_matrix(&matrices[i]);
+    }
     return ERROR_INPUT;
   }
 
-  print_matrix(matrix1);
+  // Print the final result
+  print_matrix(matrices[0]);
 
-  free_matrix(&matrix1);
-  free_matrix(&matrix2);
+  free_matrix(&matrices[0]);
 
   return EXIT_SUCCESS;
 }
@@ -75,7 +98,6 @@ int read_matrix(matrix_t *matrix)
     {
       if (scanf("%d", &matrix->elems[i * matrix->cols + j]) != 1)
       {
-        free_matrix(matrix);
         return ERROR_INPUT;
       }
     }
@@ -132,14 +154,15 @@ int matrices_are_compatible(matrix_t *matrix1, matrix_t *matrix2, char sign)
   {
   case '+':
   case '-':
-    return matrix1->rows == matrix2->rows && matrix1->cols == matrix2->cols;
+    if (matrix1->rows == matrix2->rows && matrix1->cols == matrix2->cols)
+      return 1;
     break;
   case '*':
-    return matrix1->cols == matrix2->rows;
+    if (matrix1->cols == matrix2->rows)
+      return 1;
     break;
-  default:
-    return ERROR_INPUT;
   }
+  return ERROR_INPUT; // Matrices are incompatible
 }
 
 /**
@@ -214,6 +237,10 @@ int mul_matrix(matrix_t *matrix1, matrix_t *matrix2)
   result_matrix.rows = matrix1->rows;
   result_matrix.cols = matrix2->cols;
   result_matrix.elems = (int *)malloc(result_matrix.rows * result_matrix.cols * sizeof(int));
+  if (!result_matrix.elems)
+  {
+    return ERROR_INPUT;
+  }
 
   for (size_t i = 0; i < result_matrix.rows; i++)
   {
@@ -234,24 +261,98 @@ int mul_matrix(matrix_t *matrix1, matrix_t *matrix2)
 }
 
 /**
- * Allocates the matrix.
- * @param matrix The matrix.
- * @param rows The number of rows.
- * @param cols The number of columns.
- * @return EXIT_SUCCESS if the matrix was allocated, ERROR_INPUT otherwise.
- */
-int allocate_matrix(matrix_t *matrix, int rows, int cols) {
-    matrix->rows = rows;
-    matrix->cols = cols;
-    matrix->elems = (int *)malloc(rows * cols * sizeof(int));
-    return matrix->elems ? EXIT_SUCCESS : ERROR_INPUT;
-}
-
-/**
  * Frees the matrix.
  * @param matrix The matrix.
  */
-void free_matrix(matrix_t *matrix) {
+void free_matrix(matrix_t *matrix)
+{
+  if (matrix->elems)
+  {
     free(matrix->elems);
     matrix->elems = NULL;
+  }
+}
+
+int read_sequence(matrix_t matrices[], operation_t operations[], int *matrix_count, int *operation_count)
+{
+  *matrix_count = 0;
+  *operation_count = 0;
+
+  while (*matrix_count < MAX_SEQUENCE)
+  {
+    if (read_matrix(&matrices[*matrix_count]) == ERROR_INPUT)
+    {
+      return ERROR_INPUT;
+    }
+    (*matrix_count)++;
+
+    char sign;
+    if (read_sign(&sign) == ERROR_INPUT)
+    {
+      break;
+    }
+
+    operations[*operation_count].sign = sign;
+    switch (sign)
+    {
+    case '+':
+      operations[*operation_count].priority = PRIORITY_ADD;
+      break;
+    case '-':
+      operations[*operation_count].priority = PRIORITY_SUB;
+      break;
+    case '*':
+      operations[*operation_count].priority = PRIORITY_MUL;
+      break;
+
+    default:
+      return ERROR_INPUT;
+    }
+    (*operation_count)++;
+  }
+
+  return EXIT_SUCCESS;
+}
+
+int compute_sequence(matrix_t matrices[], operation_t operations[], int *matrix_count, int *operation_count)
+{
+  while (*operation_count > 0)
+  {
+    int highest_priority = -1;
+    int highest_index = -1;
+
+    for (size_t i = 0; i < *operation_count; i++)
+    {
+      if (operations[i].priority > highest_priority)
+      {
+        highest_priority = operations[i].priority;
+        highest_index = i;
+      }
+    }
+
+    matrix_t *matrix1 = &matrices[highest_index];
+    matrix_t *matrix2 = &matrices[highest_index + 1];
+    char sign = operations[highest_index].sign;
+
+    if (compute_matrix(matrix1, sign, matrix2) == ERROR_INPUT)
+    {
+      return ERROR_INPUT;
+    }
+
+    free_matrix(matrix2);
+
+    for (size_t i = highest_index + 1; i < *matrix_count - 1; i++)
+    {
+      matrices[i] = matrices[i + 1];
+    }
+    for (size_t i = highest_index; i < *operation_count - 1; i++)
+    {
+      operations[i] = operations[i + 1];
+    }
+
+    (*matrix_count)--;
+    (*operation_count)--;
+  }
+
+  return EXIT_SUCCESS;
 }
