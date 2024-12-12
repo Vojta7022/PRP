@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_LINE_LENGTH 1024
+#define MAX_LINE_LENGTH 2048
 
 // Function prototypes
 int search_for_pattern(char line[], const char *pattern);
 void print_colored_line(char line[], const char *pattern);
+int search_for_pattern_regex(const char *line, const char *pattern);
 int strings_equal(const char *s1, const char *s2);
 
-/* The main program */
 int main(int argc, char *argv[])
 {
   FILE *file = NULL;
@@ -16,50 +16,57 @@ int main(int argc, char *argv[])
 
   switch (argc)
   {
-    case 2:
+  case 2:
+    file = stdin;
+    break;
+  case 3:
+    if (strings_equal(argv[1], "-E") == 0 || strings_equal(argv[1], "--color=always") == 0)
+    {
       file = stdin;
-      break;
-    case 3:
-      if (strings_equal(argv[1], "-E") == 0 || strings_equal(argv[1], "--color=always") == 0)
-      {
-        file = stdin;
-        pattern = argv[2];
-      }
-      else
-      {
-        file = fopen(argv[2], "r");
-        if (file == NULL)
-        {
-          fprintf(stderr, "Error: Cannot open the file\n");
-          return EXIT_FAILURE;
-        }
-      }
-      break;
-    case 4:
       pattern = argv[2];
-      if (strings_equal(argv[1], "-E") != 0 && strings_equal(argv[1], "--color=always") != 0)
-      {
-        fprintf(stderr, "Error: Invalid option\n");
-        return EXIT_FAILURE;
-      }
-      file = fopen(argv[3], "r");
+    }
+    else
+    {
+      file = fopen(argv[2], "r");
       if (file == NULL)
       {
         fprintf(stderr, "Error: Cannot open the file\n");
         return EXIT_FAILURE;
       }
-      break;
-    default:
-      fprintf(stderr, "Error: Invalid number of arguments\n");
+    }
+    break;
+  case 4:
+    pattern = argv[2];
+    if (strings_equal(argv[1], "-E") != 0 && strings_equal(argv[1], "--color=always") != 0)
+    {
+      fprintf(stderr, "Error: Invalid option\n");
       return EXIT_FAILURE;
+    }
+    file = fopen(argv[3], "r");
+    if (file == NULL)
+    {
+      fprintf(stderr, "Error: Cannot open the file\n");
+      return EXIT_FAILURE;
+    }
+    break;
+  default:
+    fprintf(stderr, "Error: Invalid number of arguments\n");
+    return EXIT_FAILURE;
   }
 
   char line[MAX_LINE_LENGTH];
   int ret = EXIT_FAILURE;
   while (fgets(line, MAX_LINE_LENGTH, file) != NULL)
   {
-    //printf("Read line: %s\n", line);
-    if (search_for_pattern(line, pattern) == EXIT_SUCCESS)
+    if (strings_equal(argv[1], "-E") == 0)
+    {
+      if (search_for_pattern_regex(line, pattern) == EXIT_SUCCESS)
+      {
+        printf("%s", line);
+        ret = EXIT_SUCCESS;
+      }
+    }
+    else if (search_for_pattern(line, pattern) == EXIT_SUCCESS)
     {
       if (strings_equal(argv[1], "--color=always") == 0)
       {
@@ -79,7 +86,6 @@ int main(int argc, char *argv[])
 
 int search_for_pattern(char line[], const char *pattern)
 {
-  //printf("line: %s\n", line);
   if (pattern == NULL)
   {
     return EXIT_FAILURE;
@@ -97,14 +103,12 @@ int search_for_pattern(char line[], const char *pattern)
         }
         if (pattern[j + 1] == '\0')
         {
-          //printf("pattern found\n");
           return EXIT_SUCCESS;
         }
       }
     }
   }
 
-  //printf("pattern not found\n");
   return EXIT_FAILURE;
 }
 
@@ -126,7 +130,7 @@ void print_colored_line(char line[], const char *pattern)
         pattern_found = 1;
         end_index = i + j;
         break;
-      }      
+      }
     }
     if (pattern_found == 1)
     {
@@ -143,6 +147,65 @@ void print_colored_line(char line[], const char *pattern)
       end_index = -1;
     }
   }
+}
+
+int search_for_pattern_regex(const char *line, const char *pattern)
+{
+  size_t i = 0, j = 0;
+
+  while (line[i] != '\0')
+  {
+    if (pattern[j] == '\0')
+    {
+      return EXIT_SUCCESS;
+    }
+    else if (pattern[j + 1] == '*')
+    {
+      // '*' matches zero or more of the preceding character
+      while (line[i] == pattern[j])
+      {
+        i++;
+      }
+      j += 2;
+    }
+    else if (pattern[j + 1] == '+')
+    {
+      // '+' matches one or more of the preceding character
+      if (line[i] != pattern[j])
+      {
+        j = 0;
+        continue;
+      }
+      while (line[i] == pattern[j])
+      {
+        i++;
+      }
+      j += 2;
+    }
+    else if (pattern[j + 1] == '?')
+    {
+      // '?' matches zero or one of the preceding character
+      if (line[i] == pattern[j])
+      {
+        i++;
+      }
+      j += 2;
+    }
+    else
+    {
+      if (line[i] != pattern[j])
+      {
+        j = 0;
+      }
+      else
+      {
+        j++;
+      }
+      i++;
+    }
+  }
+
+  return (pattern[j] == '\0') ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 int strings_equal(const char *s1, const char *s2)
