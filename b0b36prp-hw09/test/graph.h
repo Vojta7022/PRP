@@ -1,9 +1,22 @@
 #ifndef __GRAPH_H__
 #define __GRAPH_H__
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define INIT_SIZE 10
+
 typedef struct {
-   // TODO - implement your own struct for graph  
-   int capacity; // empty struct is not allowed
+   int from;
+   int to;
+   int cost;
+} edge_t;
+
+typedef struct {
+   edge_t *edges;
+   int num_edges;
+   int capacity;
 } graph_t;
 
 /* Allocate a new graph and return a reference to it. */
@@ -20,5 +33,11 @@ void load_bin(const char *fname, graph_t *graph);
 void save_txt(const graph_t * const graph, const char *fname);
 /* Save the graph to the binary file. */
 void save_bin(const graph_t * const graph, const char *fname);
+
+/* Increase the size of the edges array. */
+graph_t* enlarge_graph(graph_t *graph);
+
+/* Memory allocation function that checks if the memory was allocated successfully. */
+void *my_malloc(size_t size);
 
 #endif // __GRAPH_H__
