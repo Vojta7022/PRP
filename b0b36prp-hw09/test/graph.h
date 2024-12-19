@@ -37,6 +37,9 @@ void save_bin(const graph_t * const graph, const char *fname);
 /* Increase the size of the edges array. */
 graph_t* enlarge_graph(graph_t *graph);
 
+/* Write an integer to the file. */
+void write_int(FILE *f, int value);
+
 /* Memory allocation function that checks if the memory was allocated successfully. */
 void *my_malloc(size_t size);
 
