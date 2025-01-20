@@ -1,17 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-<<<<<<< HEAD
 #include <string.h>
 
 #define ERROR_INPUT 100
-#define MAX_SEQUENCE 26
-#define MAX_ELEMENTS 100000
+#define MAX_SEQUENCE 52
+#define MAX_ELEMENTS 200000
 #define INIT_SIZE 10
-=======
-
-#define ERROR_INPUT 100
-#define MAX_SEQUENCE 100
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
 
 #define PRIORITY_ADD 1
 #define PRIORITY_SUB 1
@@ -22,10 +16,7 @@ typedef struct matrix
   int rows;
   int cols;
   int *elems;
-<<<<<<< HEAD
   size_t size;
-=======
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
 } matrix_t;
 
 typedef struct operation
@@ -35,11 +26,7 @@ typedef struct operation
 } operation_t;
 
 // Function prototypes
-<<<<<<< HEAD
 int read_matrix(matrix_t *matrix, char input[]);
-=======
-int read_matrix(matrix_t *matrix);
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
 int read_sign(char *sign);
 void print_matrix(matrix_t matrix);
 int matrices_are_compatible(matrix_t *matrix1, matrix_t *matrix2, char sign);
@@ -50,26 +37,17 @@ int mul_matrix(matrix_t *matrix1, matrix_t *matrix2);
 void free_matrix(matrix_t *matrix);
 int read_sequence(matrix_t matrices[], operation_t operations[], int *matrix_count, int *operation_count);
 int compute_sequence(matrix_t matrices[], operation_t operations[], int *matrix_count, int *operation_count);
-<<<<<<< HEAD
 int copy_matrix(matrix_t *dest, const matrix_t *src);
-=======
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
 
 int main(int argc, char *argv[])
 {
   matrix_t matrices[MAX_SEQUENCE];
-<<<<<<< HEAD
-=======
-  operation_t operations[MAX_SEQUENCE - 1];
-  int matrix_count, operation_count;
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
 
   for (size_t i = 0; i < MAX_SEQUENCE; i++)
   {
     matrices[i].rows = 0;
     matrices[i].cols = 0;
     matrices[i].elems = NULL;
-<<<<<<< HEAD
     matrices[i].size = 0;
   }
 
@@ -106,7 +84,7 @@ int main(int argc, char *argv[])
     return ERROR_INPUT;
   }
 
-  matrix_t matrix_sequence[500];
+  matrix_t matrix_sequence[1000];
 
   for (size_t i = 0; i < 500; i++)
   {
@@ -116,7 +94,7 @@ int main(int argc, char *argv[])
     matrix_sequence[i].size = 0;
   }
 
-  operation_t operation_sequence[500];
+  operation_t operation_sequence[1000];
 
   int matrix_count = 0;
   int operation_count = 0;
@@ -154,36 +132,16 @@ int main(int argc, char *argv[])
   }
 
   if (compute_sequence(matrix_sequence, operation_sequence, &matrix_count, &operation_count) == ERROR_INPUT)
-=======
-  }
-
-  if (read_sequence(matrices, operations, &matrix_count, &operation_count) == ERROR_INPUT)
-  {
-    fprintf(stderr, "Error: Chybny vstup!\n");
-    for (size_t i = 0; i < matrix_count + 1; i++)
-    {
-      free_matrix(&matrices[i]);
-    }
-    return ERROR_INPUT;
-  }
-
-  if (compute_sequence(matrices, operations, &matrix_count, &operation_count) == ERROR_INPUT)
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
   {
     fprintf(stderr, "Error: Chybny vstup!\n");
     for (size_t i = 0; i < matrix_count; i++)
     {
-<<<<<<< HEAD
       free_matrix(&matrix_sequence[i]);
-=======
-      free_matrix(&matrices[i]);
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
     }
     return ERROR_INPUT;
   }
 
   // Print the final result
-<<<<<<< HEAD
   print_matrix(matrix_sequence[0]);
   free_matrix(&matrix_sequence[0]);
 
@@ -194,11 +152,6 @@ int main(int argc, char *argv[])
       free_matrix(&matrices[i]);
     }
   }
-=======
-  print_matrix(matrices[0]);
-
-  free_matrix(&matrices[0]);
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
 
   return EXIT_SUCCESS;
 }
@@ -207,26 +160,14 @@ int main(int argc, char *argv[])
  * Reads the matrix.
  * @param matrix The matrix.
  */
-<<<<<<< HEAD
 int read_matrix(matrix_t *matrix, char input[])
 {
   matrix->size = INIT_SIZE;
   matrix->elems = (int *)calloc(INIT_SIZE, sizeof(int));
-=======
-int read_matrix(matrix_t *matrix)
-{
-  if (scanf("%d %d", &matrix->rows, &matrix->cols) != 2 || matrix->rows <= 0 || matrix->cols <= 0)
-  {
-    return ERROR_INPUT;
-  }
-
-  matrix->elems = (int *)malloc(matrix->rows * matrix->cols * sizeof(int));
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
   if (!matrix->elems)
   {
     return ERROR_INPUT;
   }
-<<<<<<< HEAD
   int cols = 0;
   int elems = 0;
   int i = 2;
@@ -285,20 +226,6 @@ int read_matrix(matrix_t *matrix)
   matrix->cols = cols;
   matrix->rows = elems / cols;
 
-=======
-
-  for (size_t i = 0; i < matrix->rows; i++)
-  {
-    for (size_t j = 0; j < matrix->cols; j++)
-    {
-      if (scanf("%d", &matrix->elems[i * matrix->cols + j]) != 1)
-      {
-        return ERROR_INPUT;
-      }
-    }
-  }
-
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
   return EXIT_SUCCESS;
 }
 
@@ -322,11 +249,7 @@ int read_sign(char *sign)
  */
 void print_matrix(matrix_t matrix)
 {
-<<<<<<< HEAD
   printf("[");
-=======
-  printf("%d %d\n", matrix.rows, matrix.cols);
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
   for (size_t i = 0; i < matrix.rows; i++)
   {
     for (size_t j = 0; j < matrix.cols; j++)
@@ -337,17 +260,12 @@ void print_matrix(matrix_t matrix)
         printf(" ");
       }
     }
-<<<<<<< HEAD
     if (i < matrix.rows - 1)
     {
       printf("; ");
     }
   }
   printf("]\n");
-=======
-    printf("\n");
-  }
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
 }
 
 /**
@@ -445,12 +363,8 @@ int mul_matrix(matrix_t *matrix1, matrix_t *matrix2)
   matrix_t result_matrix;
   result_matrix.rows = matrix1->rows;
   result_matrix.cols = matrix2->cols;
-<<<<<<< HEAD
   result_matrix.size = result_matrix.rows * result_matrix.cols;
   result_matrix.elems = (int *)calloc(result_matrix.rows * result_matrix.cols, sizeof(int));
-=======
-  result_matrix.elems = (int *)malloc(result_matrix.rows * result_matrix.cols * sizeof(int));
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
   if (!result_matrix.elems)
   {
     return ERROR_INPUT;
@@ -469,7 +383,6 @@ int mul_matrix(matrix_t *matrix1, matrix_t *matrix2)
   }
 
   free_matrix(matrix1);
-<<<<<<< HEAD
   if (copy_matrix(matrix1, &result_matrix) != EXIT_SUCCESS)
   {
     free_matrix(&result_matrix);
@@ -477,9 +390,6 @@ int mul_matrix(matrix_t *matrix1, matrix_t *matrix2)
   }
 
   free_matrix(&result_matrix);
-=======
-  *matrix1 = result_matrix;
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
 
   return EXIT_SUCCESS;
 }
@@ -494,59 +404,12 @@ void free_matrix(matrix_t *matrix)
   {
     free(matrix->elems);
     matrix->elems = NULL;
-<<<<<<< HEAD
     matrix->rows = 0;
     matrix->cols = 0;
     matrix->size = 0;
   }
 }
 
-=======
-  }
-}
-
-int read_sequence(matrix_t matrices[], operation_t operations[], int *matrix_count, int *operation_count)
-{
-  *matrix_count = 0;
-  *operation_count = 0;
-
-  while (*matrix_count < MAX_SEQUENCE)
-  {
-    if (read_matrix(&matrices[*matrix_count]) == ERROR_INPUT)
-    {
-      return ERROR_INPUT;
-    }
-    (*matrix_count)++;
-
-    char sign;
-    if (read_sign(&sign) == ERROR_INPUT)
-    {
-      break;
-    }
-
-    operations[*operation_count].sign = sign;
-    switch (sign)
-    {
-    case '+':
-      operations[*operation_count].priority = PRIORITY_ADD;
-      break;
-    case '-':
-      operations[*operation_count].priority = PRIORITY_SUB;
-      break;
-    case '*':
-      operations[*operation_count].priority = PRIORITY_MUL;
-      break;
-
-    default:
-      return ERROR_INPUT;
-    }
-    (*operation_count)++;
-  }
-
-  return EXIT_SUCCESS;
-}
-
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
 int compute_sequence(matrix_t matrices[], operation_t operations[], int *matrix_count, int *operation_count)
 {
   while (*operation_count > 0)
@@ -589,7 +452,6 @@ int compute_sequence(matrix_t matrices[], operation_t operations[], int *matrix_
 
   return EXIT_SUCCESS;
 }
-<<<<<<< HEAD
 
 /**
  * Copies the contents of one matrix to another.
@@ -608,11 +470,6 @@ int copy_matrix(matrix_t *dest, const matrix_t *src)
   {
     return ERROR_INPUT;
   }
-  for (size_t i = 0; i < dest->size; i++)
-  {
-    dest->elems[i] = src->elems[i];
-  }
+  memcpy(dest->elems, src->elems, dest->size * sizeof(int));
   return EXIT_SUCCESS;
 }
-=======
->>>>>>> 6fd26eef095bc05e5c6f24ed9a36b036b370d83a
